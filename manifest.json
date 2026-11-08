@@ -1,0 +1,11 @@
+{
+  "name": "FusionGunGame",
+  "version_number": "1.0.0",
+  "website_url": "",
+  "description": "A LabFusion gamemode. A Gun Game gamemode",
+  "dependencies": [
+    "LavaGang-MelonLoader-0.6.6",
+    "Lakatrazz-Fusion-1.14.2",
+    "bonelib-BoneLib-3.2.2"
+  ]
+}
