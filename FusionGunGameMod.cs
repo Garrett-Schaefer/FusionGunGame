@@ -23,7 +23,7 @@ using LabFusion.SDK.Modules;
 using UnityEngine;
 
 [assembly: MelonLoader.MelonGame("Stress Level Zero", "BONELAB")]
-[assembly: MelonLoader.MelonInfo(typeof(BonelabGunGame.FusionGunGameMod), "Fusion Gun Game", "1.0.8", "Local Mod")]
+[assembly: MelonLoader.MelonInfo(typeof(BonelabGunGame.FusionGunGameMod), "Fusion Gun Game", "1.0.9", "Local Mod")]
 
 namespace BonelabGunGame;
 
@@ -57,7 +57,7 @@ public sealed class GunGameModule : LabFusion.SDK.Modules.Module
 {
     public override string Name => "Fusion Gun Game";
     public override string Author => "Local Mod";
-    public override Version Version => new(1, 0, 8);
+    public override Version Version => new(1, 0, 9);
     public override ConsoleColor Color => ConsoleColor.Cyan;
 
     protected override void OnModuleRegistered()
@@ -95,6 +95,7 @@ public sealed class FusionGunGameMode : Gamemode
     private readonly Dictionary<byte, float> _recentVictimDeaths = new();
     private int _respawnGeneration;
     internal static float LocalInvulnerabilityUntil = float.NegativeInfinity;
+    internal static bool ImmunityHitLogged;
 
     public override string Title => "Gun Game";
     public override string Author => "Local Mod";
@@ -131,6 +132,7 @@ public sealed class FusionGunGameMode : Gamemode
         LocalHealth.OnAttackedByPlayer -= OnAttackedByPlayer;
         LocalHealth.OnRespawn -= OnLocalRespawn;
         LocalInvulnerabilityUntil = float.NegativeInfinity;
+        ImmunityHitLogged = false;
         _lastAttacker = null;
         _respawnGeneration++;
         DespawnCurrentWeapon();
@@ -159,6 +161,7 @@ public sealed class FusionGunGameMode : Gamemode
     {
         _lastAttacker = null;
         LocalInvulnerabilityUntil = Time.time + 3f;
+        ImmunityHitLogged = false;
         MelonLoader.MelonLogger.Msg("Gun Game: 3-second respawn immunity started.");
         var generation = ++_respawnGeneration;
         MelonLoader.MelonCoroutines.Start(RespawnRoutine(generation));
@@ -603,14 +606,44 @@ internal static class RespawnImmunityPatch
     [HarmonyPrefix]
     private static bool Prefix(Player_Health __instance)
     {
-        if (Time.time >= FusionGunGameMode.LocalInvulnerabilityUntil || __instance == null || __instance.transform == null)
-            return true;
+        return !ShouldBlock(__instance);
+    }
+
+    internal static bool ShouldBlock(Component health)
+    {
+        if (Time.time >= FusionGunGameMode.LocalInvulnerabilityUntil || health == null || health.transform == null)
+            return false;
 
         var rig = Player.RigManager;
-        if (rig == null || __instance.transform.root != rig.transform.root)
-            return true;
+        if (rig == null || health.transform.root != rig.transform.root)
+            return false;
 
-        // Stop BONELAB's local player damage entry point during respawn protection.
-        return false;
+        if (!FusionGunGameMode.ImmunityHitLogged)
+        {
+            FusionGunGameMode.ImmunityHitLogged = true;
+            MelonLoader.MelonLogger.Msg("Gun Game: respawn immunity blocked incoming damage.");
+        }
+
+        return true;
+    }
+}
+
+[HarmonyPatch(typeof(Health), nameof(Health.TAKEDAMAGE))]
+internal static class BaseHealthRespawnImmunityPatch
+{
+    [HarmonyPrefix]
+    private static bool Prefix(Health __instance)
+    {
+        return !RespawnImmunityPatch.ShouldBlock(__instance);
+    }
+}
+
+[HarmonyPatch(typeof(Player_Health), nameof(Player_Health.OnReceivedDamage))]
+internal static class PlayerDamageRespawnImmunityPatch
+{
+    [HarmonyPrefix]
+    private static bool Prefix(Player_Health __instance)
+    {
+        return !RespawnImmunityPatch.ShouldBlock(__instance);
     }
 }
