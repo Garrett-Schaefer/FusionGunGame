@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <PlatformTarget>x64</PlatformTarget>
+    <AssemblyName>FusionGunGame</AssemblyName>
+    <RootNamespace>BonelabGunGame</RootNamespace>
+    <BonelabDir>$(MSBuildThisFileDirectory)stress-level-zero-inc-bonelab</BonelabDir>
+    <OutputPath>$(MSBuildThisFileDirectory)dist\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="LabFusion" HintPath="$(BonelabDir)\Mods\LabFusion.dll" Private="false" />
+    <Reference Include="BoneLib" HintPath="$(BonelabDir)\Mods\BoneLib.dll" Private="false" />
+    <Reference Include="MelonLoader" HintPath="$(BonelabDir)\MelonLoader\net6\MelonLoader.dll" Private="false" />
+    <Reference Include="0Harmony" HintPath="$(BonelabDir)\MelonLoader\net6\0Harmony.dll" Private="false" />
+    <Reference Include="Il2CppInterop.Runtime" HintPath="$(BonelabDir)\MelonLoader\net6\Il2CppInterop.Runtime.dll" Private="false" />
+    <Reference Include="Il2CppSLZ.Marrow" HintPath="$(BonelabDir)\MelonLoader\Il2CppAssemblies\Il2CppSLZ.Marrow.dll" Private="false" />
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(BonelabDir)\MelonLoader\Il2CppAssemblies\UnityEngine.CoreModule.dll" Private="false" />
+    <Reference Include="UnityEngine.PhysicsModule" HintPath="$(BonelabDir)\MelonLoader\Il2CppAssemblies\UnityEngine.PhysicsModule.dll" Private="false" />
+  </ItemGroup>
+</Project>
